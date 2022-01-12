@@ -28,6 +28,7 @@ def listfolders(service, filid, des):
     folder = results.get('files', [])
     for item in folder:
         if str(item['mimeType']) == str('application/vnd.google-apps.folder'):
+            print(item['mineType'])
             if not os.path.isdir(des+"/"+item['name']):
                 os.mkdir(path=des+"/"+item['name'])
             print(item['name'])
@@ -111,7 +112,7 @@ def main():
     foldername = input("Enter folder name to sync: ")
     #  path C:\Users\Daniyal\Documents
     path = input("Enter path to sync: ")
-    full_folder_path = path+"/"+foldername+"/"
+    full_folder_path = path+"/"+foldername
     # Enter The Downloadable folder ID From Shared Link
     Folder_id = CheckFolder(service, foldername)
     print(str(Folder_id) + " is the folder ID")
@@ -124,22 +125,22 @@ def main():
         print('Files:')
         for item in items:
             if item['mimeType'] == 'application/vnd.google-apps.folder':
+                print("in if")
                 if not os.path.isdir(full_folder_path):
+                    print(item['mimeType'])
                     os.mkdir(full_folder_path)
-                bfolderpath = full_folder_path
+                bfolderpath = full_folder_path+"/"
                 if not os.path.isdir(bfolderpath+item['name']):
+                    print(item['mimeType'])
                     os.mkdir(bfolderpath+item['name'])
 
-                folderpath = bfolderpath+item['name']
+                folderpath = bfolderpath + item['name']
                 listfolders(service, item['id'], folderpath)
             else:
-                if not os.path.isdir(full_folder_path):
-                    os.mkdir(full_folder_path)
-                bfolderpath = full_folder_path
-                if not os.path.isdir(bfolderpath + item['name']):
-                    os.mkdir(bfolderpath + item['name'])
+                print("in else")
+                bfolderpath = full_folder_path+"/"
 
-                filepath = bfolderpath + item['name']
+                filepath = bfolderpath
                 downloadfiles(service, item['id'], item['name'], filepath)
 
 
