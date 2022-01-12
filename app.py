@@ -28,7 +28,7 @@ def listfolders(service, filid, des):
     folder = results.get('files', [])
     for item in folder:
         if str(item['mimeType']) == str('application/vnd.google-apps.folder'):
-            print(item['mineType'])
+            # print(item['mineType'])
             if not os.path.isdir(des+"/"+item['name']):
                 os.mkdir(path=des+"/"+item['name'])
             print(item['name'])
