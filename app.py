@@ -4,16 +4,9 @@ import os
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
-from apiclient.http import MediaFileUpload, MediaIoBaseDownload
+from apiclient.http import MediaIoBaseDownload
 import io
-from apiclient import errors
-from apiclient import http
-import logging
 
-from apiclient import discovery
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -125,19 +118,16 @@ def main():
         print('Files:')
         for item in items:
             if item['mimeType'] == 'application/vnd.google-apps.folder':
-                print("in if")
+
                 if not os.path.isdir(full_folder_path):
-                    print(item['mimeType'])
                     os.mkdir(full_folder_path)
                 bfolderpath = full_folder_path+"/"
                 if not os.path.isdir(bfolderpath+item['name']):
-                    print(item['mimeType'])
                     os.mkdir(bfolderpath+item['name'])
 
                 folderpath = bfolderpath + item['name']
                 listfolders(service, item['id'], folderpath)
             else:
-                print("in else")
                 bfolderpath = full_folder_path+"/"
 
                 filepath = bfolderpath
