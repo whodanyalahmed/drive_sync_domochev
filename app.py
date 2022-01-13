@@ -41,12 +41,28 @@ def listfolders(service, filid, des):
 
 # To Download Files
 def downloadfiles(service, dowid, name, mimeType, dfilespath):
-    if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet':
+    print(mimeType)
+    if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet' or mimeType == 'application/vnd.google-apps.presentation' or mimeType == 'application/vnd.google-apps.document' or mimeType == 'application/vnd.google-apps.form':
         try:
-            request = service.files().export_media(fileId=dowid,
-                                                   mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            print("Downloading file: " + name)
-            fh = io.FileIO(dfilespath+"/" + name + '.xlsx', 'wb')
+            if(mimeType == "application/vnd.google-apps.spreadsheet"):
+
+                request = service.files().export_media(fileId=dowid,
+                                                       mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                print("Downloading file: " + name)
+                fh = io.FileIO(dfilespath+"/" + name + '.xlsx', 'wb')
+            elif (mimeType == "application/vnd.google-apps.presentation"):
+                request = service.files().export_media(fileId=dowid,
+                                                       mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+                print("Downloading file: " + name)
+                fh = io.FileIO(dfilespath+"/" + name + '.pptx', 'wb')
+            elif (mimeType == "application/vnd.google-apps.document"):
+                request = service.files().export_media(fileId=dowid,
+                                                       mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                print("Downloading file: " + name)
+                fh = io.FileIO(dfilespath+"/" + name + '.docx', 'wb')
+            else:
+                print("info: cant download file" + name+ " with mimeType " + mimeType)
+                return False
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
