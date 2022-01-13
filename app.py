@@ -42,7 +42,6 @@ def listfolders(service, filid, des):
 
 # To Download Files
 def downloadfiles(service, dowid, name, mimeType, dfilespath):
-    print("mimeType: " + mimeType)
     if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet':
         try:
             request = service.files().export_media(fileId=dowid,
@@ -127,7 +126,8 @@ def main():
 
     service = build('drive', 'v3', credentials=creds)
     # Call the Drive v3 API
-    foldername = input("Enter folder name to sync: ")
+    foldername = input(
+        "Enter folder name to sync(for complete drive type 'root'): ")
     #  path C:\Users\Daniyal\Documents
     path = input("Enter path to sync: ")
     full_folder_path = path+"/"+foldername
