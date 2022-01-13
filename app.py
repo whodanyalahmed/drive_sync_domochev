@@ -1,6 +1,7 @@
 from __future__ import print_function
 import pickle
 import os
+from textwrap import fill
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -28,23 +29,47 @@ def listfolders(service, filid, des):
             # LOOP un-till the files are found
             listfolders(service, item['id'], des+"/"+item['name'])
         else:
-            downloadfiles(service, item['id'], item['name'], des)
-            print(item['name'])
+            try:
+
+                downloadfiles(service, item['id'],
+                              item['name'], item['mimeType'], des)
+                print(item['name'])
+            except Exception as e:
+                print("info: cant download file")
+                print(e)
     return folder
 
 
 # To Download Files
-def downloadfiles(service, dowid, name, dfilespath):
-    request = service.files().get_media(fileId=dowid)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while done is False:
-        status, done = downloader.next_chunk()
-        print("Download %d%%." % int(status.progress() * 100))
-    with io.open(dfilespath + "/" + name, 'wb') as f:
-        fh.seek(0)
-        f.write(fh.read())
+def downloadfiles(service, dowid, name, mimeType, dfilespath):
+    print("mimeType: " + mimeType)
+    if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet':
+        try:
+            request = service.files().export_media(fileId=dowid,
+                                                   mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            print("Downloading file: " + name)
+            fh = io.FileIO(dfilespath+"/" + name + '.xlsx', 'wb')
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                print('Download %d%%.' % int(status.progress() * 100))
+            return fh
+        except Exception as e:
+            print('Error downloading file from Google Drive: %s' % e)
+    else:
+
+        request = service.files().get_media(fileId=dowid)
+        print("Downloading file: " + name)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+            print("Download %d%%." % int(status.progress() * 100))
+        with io.open(dfilespath + "/" + name, 'wb') as f:
+            fh.seek(0)
+            f.write(fh.read())
 
 
 def CheckFolder(service, FileName):
@@ -109,8 +134,13 @@ def main():
     # Enter The Downloadable folder ID From Shared Link
     Folder_id = CheckFolder(service, foldername)
     print(str(Folder_id) + " is the folder ID")
-    results = service.files().list(
-        pageSize=1000, q="'{}' in parents".format(Folder_id), fields="nextPageToken, files(id, name, mimeType)").execute()
+    if foldername == "root":
+
+        results = service.files().list(
+            pageSize=1000, q="'{}' in parents".format(foldername), fields="nextPageToken, files(id, name, mimeType)").execute()
+    else:
+        results = service.files().list(
+            pageSize=1000, q="'{}' in parents".format(Folder_id), fields="nextPageToken, files(id, name, mimeType)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
@@ -128,10 +158,14 @@ def main():
                 folderpath = bfolderpath + item['name']
                 listfolders(service, item['id'], folderpath)
             else:
+                if not os.path.isdir(full_folder_path):
+                    os.mkdir(full_folder_path)
                 bfolderpath = full_folder_path+"/"
-
+                # if not os.path.isdir(bfolderpath + item['name']):
+                #     os.mkdir(bfolderpath + item['name'])
                 filepath = bfolderpath
-                downloadfiles(service, item['id'], item['name'], filepath)
+                downloadfiles(
+                    service, item['id'], item['name'], item['mimeType'], filepath)
 
 
 if __name__ == '__main__':
