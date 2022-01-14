@@ -12,7 +12,11 @@ import io
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
+logFile = open("log.txt", "a+")
+logFile.write("\nStarted at: " + str(datetime.datetime.now()))
 # To list folders
+
+
 def listfolders(service, filid, des):
     results = service.files().list(
         pageSize=1000, q="\'" + filid + "\'" + " in parents",
@@ -24,7 +28,7 @@ def listfolders(service, filid, des):
             # print(item['mineType'])
             if not os.path.isdir(des+"/"+item['name']):
                 os.mkdir(path=des+"/"+item['name'])
-            print(item['name'])
+
             # LOOP un-till the files are found
             listfolders(service, item['id'], des+"/"+item['name'])
         else:
@@ -32,16 +36,16 @@ def listfolders(service, filid, des):
 
                 downloadfiles(service, item['id'],
                               item['name'], item['mimeType'], des)
-                print(item['name'])
+
             except Exception as e:
-                print("info: cant download file")
-                print(e)
+                print("info: cant download file or " + str(e))
+                logFile.write("\ninfo: cant download file or " + str(e))
     return folder
 
 
 # To Download Files
 def downloadfiles(service, dowid, name, mimeType, dfilespath):
-    print(mimeType)
+    # print(mimeType)
     if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet' or mimeType == 'application/vnd.google-apps.presentation' or mimeType == 'application/vnd.google-apps.document' or mimeType == 'application/vnd.google-apps.form':
         try:
             if(mimeType == "application/vnd.google-apps.spreadsheet"):
@@ -49,38 +53,51 @@ def downloadfiles(service, dowid, name, mimeType, dfilespath):
                 request = service.files().export_media(fileId=dowid,
                                                        mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 print("Downloading file: " + name)
+                logFile.write("\nDownloading file: " + name)
                 fh = io.FileIO(dfilespath+"/" + name + '.xlsx', 'wb')
             elif (mimeType == "application/vnd.google-apps.presentation"):
                 request = service.files().export_media(fileId=dowid,
                                                        mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
                 print("Downloading file: " + name)
+                logFile.write("\nDownloading file: " + name)
                 fh = io.FileIO(dfilespath+"/" + name + '.pptx', 'wb')
             elif (mimeType == "application/vnd.google-apps.document"):
                 request = service.files().export_media(fileId=dowid,
                                                        mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                 print("Downloading file: " + name)
+                logFile.write("\nDownloading file: " + name)
                 fh = io.FileIO(dfilespath+"/" + name + '.docx', 'wb')
             else:
-                print("info: cant download file" + name+ " with mimeType " + mimeType)
+                print("info: cant download file" +
+                      name + " with mimeType " + mimeType)
+                logFile.write("\ninfo: cant download file" +
+                              name + " with mimeType " + mimeType)
                 return False
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
                 print('Download %d%%.' % int(status.progress() * 100))
+                logFile.write("\nDownload %d%%." %
+                              int(status.progress() * 100))
             return fh
         except Exception as e:
             print('Error downloading file from Google Drive: %s' % e)
+            logFile.write("\nError downloading file from Google Drive: %s" % e)
     else:
 
         request = service.files().get_media(fileId=dowid)
         print("Downloading file: " + name)
+        logFile.write("\nDownloading file: " + name)
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
         done = False
         while done is False:
             status, done = downloader.next_chunk()
             print("Download %d%%." % int(status.progress() * 100))
+            logFile.write("\nDownload %d%%." %
+                          int(status.progress() * 100))
+
         with io.open(dfilespath + "/" + name, 'wb') as f:
             fh.seek(0)
             f.write(fh.read())
@@ -105,6 +122,7 @@ def CheckFolder(service, FileName):
     #     print(i['name'])
     if not items:
         print('No files found.')
+        logFile.write("\nNo files found.")
         return None
     else:
         # print('Files:')
@@ -112,6 +130,7 @@ def CheckFolder(service, FileName):
             # print(item['name'])
             if(item['name'] == FileName):
                 print(FileName + " is already there")
+                logFile.write(FileName + " is already there")
                 # print(item['name'])
                 return item['id']
 
@@ -149,6 +168,7 @@ def main():
     # Enter The Downloadable folder ID From Shared Link
     Folder_id = CheckFolder(service, foldername)
     print(str(Folder_id) + " is the folder ID")
+    logFile.write(str(Folder_id) + " is the folder ID")
     if foldername == "root":
 
         results = service.files().list(
@@ -159,6 +179,7 @@ def main():
     items = results.get('files', [])
     if not items:
         print('No files found.')
+        logFile.write("\nNo files found.")
     else:
         print('Files:')
         for item in items:
