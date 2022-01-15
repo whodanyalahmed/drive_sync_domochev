@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.http import MediaIoBaseDownload
 import io
+import datetime
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -46,7 +47,7 @@ def listfolders(service, filid, des):
 # To Download Files
 def downloadfiles(service, dowid, name, mimeType, dfilespath):
     # print(mimeType)
-    if mimeType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType == 'application/vnd.google-apps.spreadsheet' or mimeType == 'application/vnd.google-apps.presentation' or mimeType == 'application/vnd.google-apps.document' or mimeType == 'application/vnd.google-apps.form':
+    if mimeType == 'application/vnd.google-apps.spreadsheet' or mimeType == 'application/vnd.google-apps.presentation' or mimeType == 'application/vnd.google-apps.document' or mimeType == 'application/vnd.google-apps.form' or mimeType == 'application/vnd.google-apps.script' or mimeType == 'application/vnd.google-apps.script+json':
         try:
             if(mimeType == "application/vnd.google-apps.spreadsheet"):
 
@@ -67,11 +68,17 @@ def downloadfiles(service, dowid, name, mimeType, dfilespath):
                 print("Downloading file: " + name)
                 logFile.write("\nDownloading file: " + name)
                 fh = io.FileIO(dfilespath+"/" + name + '.docx', 'wb')
+            elif (mimeType == "application/vnd.google-apps.script"):
+                request = service.files().export_media(fileId=dowid,
+                                                       mimeType='application/vnd.google-apps.script+json')
+                print("Downloading file: " + name)
+                logFile.write("\nDownloading file: " + name)
+                fh = io.FileIO(dfilespath+"/" + name + '.json', 'wb')
             else:
-                print("info: cant download file" +
-                      name + " with mimeType " + mimeType)
-                logFile.write("\ninfo: cant download file" +
-                              name + " with mimeType " + mimeType)
+                print("info: cant download file '" +
+                      name + "' with mimeType " + mimeType)
+                logFile.write("\ninfo: cant download file '" +
+                              name + "' with mimeType " + mimeType)
                 return False
             downloader = MediaIoBaseDownload(fh, request)
             done = False
@@ -200,8 +207,19 @@ def main():
                 # if not os.path.isdir(bfolderpath + item['name']):
                 #     os.mkdir(bfolderpath + item['name'])
                 filepath = bfolderpath
-                downloadfiles(
-                    service, item['id'], item['name'], item['mimeType'], filepath)
+                try:
+
+                    downloadfiles(
+                        service, item['id'], item['name'], item['mimeType'], filepath)
+                except Exception as e:
+                    print("info: cant donwload file: " +
+                          str(item['name']) + " error: " + str(e))
+                    logFile.write("\ninfo: cant donwload file: " +
+                                  str(item['name']) + " error: " + str(e))
+
+    print("success: successfully synced")
+    logFile.write("\nsuccess: successfully synced")
+    logFile.close()
 
 
 if __name__ == '__main__':
