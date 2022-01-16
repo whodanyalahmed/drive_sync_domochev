@@ -208,5 +208,3 @@ print(' Downloaded Files = ' + str(total_download))
 print(' Skipped Files    = ' + str(total_skip))
 print(' Error Files      = ' + str(total_error))
 print('************************')
-
-input("\nPress Enter to continue...")
