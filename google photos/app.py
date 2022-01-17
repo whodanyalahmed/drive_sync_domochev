@@ -29,7 +29,7 @@ def get_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'google photos\credentials.json', SCOPES)
+                'credentials.json', SCOPES)
             creds = flow.run_local_server()
         # Save the credentials for the next run
         with open('photoslibrary_token.pickle', 'wb') as token:
