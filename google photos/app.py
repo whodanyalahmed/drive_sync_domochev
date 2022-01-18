@@ -96,17 +96,17 @@ def download_images(media_items):
                 name, ext = os.path.splitext(filename)
 
                 # If same file exists, add utime to file name
-                # if os.path.exists(path + '\\' + filename):
+                # if os.path.exists(path + '/' + filename):
                 #     filename = name + '_' + str(utime) + ext
-                download(url, path + '\\' + filename)  # Download
+                download(url, path + '/' + filename)  # Download
             except:
                 new_download = new_download + '\n\t*** Download Failed *** ' + filename
             else:
                 new_download = new_download + '\n\tDownloaded ' + filename
 
                 # Update file modified/accessed/created time to be the same as picture taken time
-                os.utime(path + '\\' + filename, (utime, utime))
-                complete_path = path + "\\" + filename
+                os.utime(path + '/' + filename, (utime, utime))
+                complete_path = path + "/" + filename
 
                 dt_obj = datetime.fromtimestamp(utime)
                 str_Date = dt_obj.strftime("%d/%m/%Y")
@@ -116,11 +116,11 @@ def download_images(media_items):
 
                 if(platform_os == "Windows"):
                     print("info: windows file time")
-                    setctime(path + '\\' + filename, utime)
-                else:
-                    command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
-                    call(command, shell=True)
-                    print("info: mac file time")
+                    setctime(path + '/' + filename, utime)
+                # else:
+                #     command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
+                #     call(command, shell=True)
+                #     print("info: mac file time")
 
                 # Add file name to list of downloaded files
                 f.write(file_name_date + '\n')
@@ -133,10 +133,10 @@ def download_images(media_items):
                     filename = name + '.MOV'
                     # print('Attempting to download live photo ' + filename)
                     # If same file exists, add utime to file name
-                    # if os.path.exists(path + '\\' + filename):
+                    # if os.path.exists(path + '/' + filename):
                     #     filename = name + '_' + str(utime) + '.MOV'
                     # Try downloading live photo
-                    download(url + 'v', path + '\\' + filename)
+                    download(url + 'v', path + '/' + filename)
                 except:
                     # No live photos
                     # print(' - No Live Photo for ' + filename)
@@ -145,15 +145,15 @@ def download_images(media_items):
                 else:
                     print(' - Live Photo downloaded ' + filename)
                     # Update file modified/accessed/created time to be the same as picture taken time
-                    os.utime(path + '\\' + filename, (utime, utime))
+                    os.utime(path + '/' + filename, (utime, utime))
 
                     if(platform_os == "Windows"):
                         print("info: windows file time")
-                        setctime(path + '\\' + filename, utime)
-                    else:
-                        command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
-                        call(command, shell=True)
-                        print("info: mac file time")
+                        setctime(path + '/' + filename, utime)
+                    # else:
+                    #     command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
+                    #     call(command, shell=True)
+                    #     print("info: mac file time")
                     # Add file name to list of downloaded files
                     f.write(filename + ' ' + str(date) + '\n')
                     new_download = new_download + '\n\tDownloaded ' + filename
@@ -183,7 +183,7 @@ service = get_service()
 # C:\Users\Daniyal\Documents
 print("*Note: it will create Google Photos Library folder in it and store the data there.\n")
 store_path = input("Please enter the path to store the downloaded files : ")
-path = store_path+"\\"+'Google Photos Library'
+path = store_path+"/"+'Google Photos Library'
 if not os.path.exists(path):
     os.makedirs(path)
 
