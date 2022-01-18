@@ -7,13 +7,17 @@ from google.auth.transport.requests import Request
 import pickle
 from urllib.request import urlretrieve as download
 from win32_setctime import setctime
-
+import platform
+from subprocess import call
 # Define Scopes for Application
 
 SCOPES = ['https://www.googleapis.com/auth/photoslibrary']
 
+platform_os = platform.system()
 
 # Get Google Photos API Service
+
+
 def get_service():
     # The file photos_token.pickle stores the user's access and refresh tokens,
     # and is created automatically when the authorization flow completes
@@ -102,7 +106,22 @@ def download_images(media_items):
 
                 # Update file modified/accessed/created time to be the same as picture taken time
                 os.utime(path + '\\' + filename, (utime, utime))
-                setctime(path + '\\' + filename, utime)
+                complete_path = path + "\\" + filename
+
+                dt_obj = datetime.fromtimestamp(utime)
+                str_Date = dt_obj.strftime("%d/%m/%Y")
+                str_Time = dt_obj.strftime("%H:%M:%S")
+
+                # command = 'SetFile -d ' + '"05/06/2019" ' + '00:00:00 ' + complete_path
+
+                if(platform_os == "Windows"):
+                    print("info: windows file time")
+                    setctime(path + '\\' + filename, utime)
+                else:
+                    command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
+                    call(command, shell=True)
+                    print("info: mac file time")
+
                 # Add file name to list of downloaded files
                 f.write(file_name_date + '\n')
                 download_num += 1
@@ -127,7 +146,14 @@ def download_images(media_items):
                     print(' - Live Photo downloaded ' + filename)
                     # Update file modified/accessed/created time to be the same as picture taken time
                     os.utime(path + '\\' + filename, (utime, utime))
-                    setctime(path + '\\' + filename, utime)
+
+                    if(platform_os == "Windows"):
+                        print("info: windows file time")
+                        setctime(path + '\\' + filename, utime)
+                    else:
+                        command = 'SetFile -d ' + '"'+str_Date+'" ' + str_Time + " " + complete_path
+                        call(command, shell=True)
+                        print("info: mac file time")
                     # Add file name to list of downloaded files
                     f.write(filename + ' ' + str(date) + '\n')
                     new_download = new_download + '\n\tDownloaded ' + filename
